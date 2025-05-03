@@ -1,131 +1,149 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useEffect, useState } from 'react';
+import { View, Text, Button, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import axios from 'axios';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [count, setCount] = useState(0);
+  const [data, setData] = useState([]);
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  const axiosTest = async () => {
+    const response = await axios.get("https://jsonplaceholder.typicode.com/posts")
+    setData(response.data);
+  }
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  useEffect(() => {
+    if (activeTab === 'data') {
+      axiosTest();
+    }
+  }, [activeTab]);
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+  const renderHomeScreen = () => (
+    <View style={styles.container}>
+      <Image source={require('./assets/images/sy.jpg')} style={styles.image} />
+      <Text style={styles.title}>소연이 괴롭히기!</Text>
+      <Text style={styles.counter}>괴롭힌 횟수: {count}</Text>
+      
+      <View style={styles.buttonRow}>
+        <View style={styles.buttonContainer}>
+          <Button title="간지럽히기!" onPress={() => setCount(count + 1)} />
+        </View>
+        <View style={styles.buttonContainer}>
+          <Button title="찌르기!" onPress={() => setCount(count + 100)} />
+        </View>
+        <View style={styles.buttonContainer}>
+          <Button title="괴롭히기!" onPress={() => setCount(count + 10000)} />
+        </View>
+      </View>
     </View>
   );
-}
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
-
-  return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
+  const renderDataScreen = () => (
+    <View style={styles.container}>
+      <Text style={styles.title}>axios 테스트</Text>
+      <ScrollView style={styles.dataContainer}>
+        {data.map((item: any) => (
+          <View key={item.id} style={styles.dataItem}>
+            <Text style={styles.dataTitle}>제목 : {item.title}</Text>
+            <Text style={styles.dataBody}>내용 : {item.body}</Text>
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
-}
+
+  return (
+    <View style={styles.mainContainer}>
+      {activeTab === 'home' ? renderHomeScreen() : renderDataScreen()}
+      
+      <View style={styles.tabBar}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'home' && styles.activeTab]} 
+          onPress={() => setActiveTab('home')}
+        >
+          <Text style={styles.tabText}>홈</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'data' && styles.activeTab]} 
+          onPress={() => setActiveTab('data')}
+        >
+          <Text style={styles.tabText}>데이터</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  mainContainer: {
+    flex: 1,
   },
-  sectionTitle: {
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
     fontSize: 24,
-    fontWeight: '600',
+    marginTop: 32,
+    marginBottom: 16,
   },
-  sectionDescription: {
-    marginTop: 8,
+  counter: {
+    fontSize: 32,
+    marginBottom: 20,
+  },
+  image: {
+    width: 300,
+    height: 300,
+    borderRadius: 100,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  buttonContainer: {
+    marginHorizontal: 8,
+    width: 100,
+  },
+  dataContainer: {
+    width: '100%',
+    maxHeight: 600,
+  },
+  dataItem: {
+    width: '100%',
+    borderBottomWidth: 5,
+    borderBottomColor: 'black',
+  },
+  dataTitle: {
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
-  highlight: {
-    fontWeight: '700',
+  dataBody: {
+    fontSize: 14,
+    marginBottom: 10,
   },
+  tabBar: {
+    flexDirection: 'row',
+    height: 60,
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+  },
+  tab: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+  },
+  activeTab: {
+    backgroundColor: '#e0e0e0',
+  },
+  tabText: {
+    fontSize: 16,
+  }
 });
 
 export default App;
